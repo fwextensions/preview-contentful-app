@@ -10,14 +10,14 @@ import App from './App';
 const root = document.getElementById('root');
 
 if (process.env.NODE_ENV === 'development' && window.self === window.top) {
-  // You can remove this if block before deploying your app
-  render(<LocalhostWarning />, root);
+	// You can remove this if block before deploying your app
+	render(<LocalhostWarning />, root);
 } else {
-  render(
-    <SDKProvider>
-      <GlobalStyles />
-      <App />
-    </SDKProvider>,
-    root
-  );
+	render(
+		<SDKProvider>
+			<GlobalStyles />
+			<App />
+		</SDKProvider>,
+		root
+	);
 }
