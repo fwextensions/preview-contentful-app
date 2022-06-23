@@ -1,9 +1,10 @@
-import React from 'react';
-//import { Paragraph } from '@contentful/f36-components';
-//import { SidebarExtensionSDK } from '@contentful/app-sdk';
-//import { /* useCMA, */ useSDK } from '@contentful/react-apps-toolkit';
+import React, { useEffect, useState } from "react";
 import { Button } from "@contentful/f36-button";
 import { Stack } from "@contentful/f36-core";
+import { ExternalLinkIcon } from "@contentful/f36-icons";
+import { Text } from "@contentful/f36-components";
+
+const BuildTimeout = 2 * 60 * 1000;
 
 async function triggerBuildHook()
 {
@@ -12,30 +13,57 @@ async function triggerBuildHook()
 			method: "POST",
 		});
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 	}
 }
 
 const Sidebar = () => {
-//	const sdk = useSDK<SidebarExtensionSDK>();
-	/*
-		 To use the cma, inject it as follows.
-		 If it is not needed, you can remove the next line.
-	*/
-	// const cma = useCMA();
+	const [buildStartTime, setBuildStartTime] = useState<Date|null>(null);
+
+	useEffect(() => {
+		let timer: ReturnType<typeof setTimeout> | undefined;
+
+		if (buildStartTime) {
+			timer = setTimeout(() => setBuildStartTime(null), BuildTimeout);
+		} else {
+			clearTimeout(timer);
+		}
+
+		return () => clearTimeout(timer);
+	}, [buildStartTime]);
+
+	const handleBuildClick = () => {
+		setBuildStartTime(new Date());
+		triggerBuildHook();
+	};
 
 	return (
 		<Stack flexDirection="column" spacing="spacingM">
-			<Button size="medium" isFullWidth onClick={triggerBuildHook}>
-				Build Netlify Preview
+			<Button
+				size="medium"
+				isFullWidth
+				isDisabled={!!buildStartTime}
+				onClick={handleBuildClick}
+			>
+				Build preview site
 			</Button>
-			<Button size="medium" isFullWidth as="a" href={process.env.REACT_APP_NETLIFY_URL} target="_blank">
-				Open Netlify
+			{buildStartTime &&
+				<Text fontColor="gray500">
+					Build started at {buildStartTime.toLocaleTimeString()}
+				</Text>
+			}
+			<Button
+				size="medium"
+				isFullWidth
+				as="a"
+				href={process.env.REACT_APP_NETLIFY_URL}
+				target="_blank"
+				endIcon={<ExternalLinkIcon />}
+			>
+				Open preview site
 			</Button>
 		</Stack>
 	);
-
-//	return <Paragraph>Hello Sidebar Component (AppId: {sdk.ids.app})</Paragraph>;
 };
 
 export default Sidebar;
